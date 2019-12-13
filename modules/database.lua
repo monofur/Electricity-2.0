@@ -13,7 +13,7 @@ end
 local connect
 
 function connect()
-	local conn = rethinkdb.connect(data)
+	local conn = rethinkdb.connect(rData)
 	database._conn = conn
 end
 

@@ -102,7 +102,7 @@ end)
 
 commands:addCommand('About', 'Reads you info about the bot.', { 'about', 'help', 'binfo' }, 0, function(message, args)
 	local tx, count, owner = '', 0, client.owner
-	local dbSettings = database:get(message).Settings
+	local dbSettings = database:get(message.guild).Settings
 	local bet = dbSettings and dbSettings.bet or database.default.Settings.bet
 	local function append(ntx, fin)
 		fin = fin or false
@@ -218,7 +218,30 @@ commands:addCommand('Commands', 'Grabs the list of commands for your rank.', { '
 end)
 
 commands:addCommand('Guild Data', 'Gathers data about the guild.', 'ginfo', 0, function(message, text)
-	
+	local guild = message.guild
+	local chan_count = #guild.textChannels + #guild.voiceChannels
+	local oname = guild.owner.username .. '#' .. guild.owner.discriminator
+	local v = guild.verificationLevel
+	local nam = (guild.owner.nickname and guild.owner.nickname .. ' (' .. oname .. ')' or oname)
+	local verificationLevel = v == 0 and "No requirements. (0)" or v == 1 and "Verified email on Discord. (1)" or
+								v == 2 and "Registered on Discord for longer than 5 minutes. (2)" or
+								v == 3 and "Guild member for more than 10 minutes. (3)" or 
+								v == 4 and "Guild member must have phone registered. (4)"
+								or "Unknown verification level. (-1)"
+
+	sendMessage(message, embed("Guild info", nil, colors.yellow, {
+		{ name = "Full guild name:", value = guild.name, inline = true },
+		{ name = "Guild id:", value = guild.id, inline = true },
+		{ name = "Region:", value = guild.region, inline = true },
+		{ name = "Owner:", value = nam, inline = true },
+		{ name = "Owner ID:", value = guild.owner.id, inline = true },
+		{ name = "Owner status:", value = guild.owner.status, inline = true },
+		{ name = "Member count:", value = guild.totalMemberCount, inline = true },
+		{ name = "Channel count:", value = (chan_count .. ' (Text: ' .. #guild.textChannels .. ' | Voice: ' .. #guild.voiceChannels .. ')'), inline = true },
+		{ name = "Shard id:", value = ts(guild.shardId):sub(1,3), inline = true },
+		{ name = "Verification level:", value = verificationLevel, inline = true },
+		{ name = "This guild was created at:", value = convertJoinedAtToTime(guild.timestamp) },
+	}))
 end)
 
 return commands
